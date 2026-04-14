@@ -2,6 +2,7 @@ import { Mail, Lock, User, Plane } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { authAPI } from "@/services/api";
+import { useAuth } from "@/context/AuthContext";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -10,6 +11,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,6 +21,7 @@ const Register = () => {
     try {
       const response = await authAPI.signup({ name, email, password });
       localStorage.setItem('token', response.token);
+      login(response.token, name);
       navigate('/search');
     } catch (err: any) {
       setError(err.message || 'Registration failed');

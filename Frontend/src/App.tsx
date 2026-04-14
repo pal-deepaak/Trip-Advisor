@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ItineraryProvider } from "@/context/ItineraryContext";
+import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ChatBot from "./components/ChatBot";
@@ -26,20 +27,22 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <ItineraryProvider>
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/hotels" element={<Hotels />} />
-            <Route path="/restaurants" element={<Restaurants />} />
-            <Route path="/things-to-do" element={<ThingsToDo />} />
-            <Route path="/search" element={<SearchPage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/itinerary" element={<ItineraryPlan />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Footer />
-          <ChatBot />
+          <AuthProvider>
+            <Navbar />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/hotels" element={<Hotels />} />
+              <Route path="/restaurants" element={<Restaurants />} />
+              <Route path="/things-to-do" element={<ThingsToDo />} />
+              <Route path="/search" element={<SearchPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/itinerary" element={<ItineraryPlan />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Footer />
+            <ChatBot />
+          </AuthProvider>
         </ItineraryProvider>
       </BrowserRouter>
     </TooltipProvider>

@@ -1,6 +1,9 @@
-import { useState, useEffect } from "react";
+import { useContext } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, Plane, Search, Building2, Compass, UtensilsCrossed, User, Bell, AlertCircle, Sun, Moon } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "@/hooks/use-toast";
+import { useState,useEffect } from "react";
 
 const navLinks = [
   { to: "/search", label: "Search All", icon: Search },
@@ -15,6 +18,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [hasNewFeatures, setHasNewFeatures] = useState(false);
+  const { isAuthenticated, userName, logout } = useAuth();
 
   // Check for new features on mount
   useEffect(() => {
@@ -27,8 +31,15 @@ const Navbar = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // Enhanced search with typeahead suggestions
     navigate("/search");
+  };
+
+  const handleLoginSuccess = () => {
+    toast({ title: "Login successful!" });
+  };
+
+  const handleSignupSuccess = () => {
+    toast({ title: "Account created successfully!" });
   };
 
   return (
@@ -65,17 +76,35 @@ const Navbar = () => {
 
         {/* User Actions */}
         <div className="hidden md:flex items-center gap-2">
-          <button className="relative p-2 rounded-lg hover:bg-muted/50 transition-colors group" title="Notifications">
-            <Bell className="w-5 h-5 text-foreground/60 group-hover:text-primary transition-colors" />
-            {hasNewFeatures && (
-              <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
-            )}
-          </button>
-          <button className="relative p-2 rounded-lg hover:bg-muted/50 transition-colors group" title="User Menu">
-            <User className="w-5 h-5 text-foreground/60 group-hover:text-primary transition-colors" />
-          </button>
-          <button className="btn-gradient text-sm !px-5 !py-2 hidden sm:inline-flex" onClick={() => navigate('/register')}>Sign Up</button>
-          <button className="btn-outline-glow text-sm hidden sm:inline-flex" onClick={() => navigate('/login')}>Login</button>
+          {isAuthenticated ? (
+            <>
+              <button className="relative p-2 rounded-lg hover:bg-muted/50 transition-colors group" title="Notifications">
+                <Bell className="w-5 h-5 text-foreground/60 group-hover:text-primary transition-colors" />
+                {hasNewFeatures && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
+                )}
+              </button>
+              <span className="text-sm text-foreground/60">{userName}</span>
+              <button
+                onClick={() => {
+                  logout();
+                  toast({ title: "Logged out successfully!" });
+                }}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="btn-gradient text-sm !px-5 !py-2 hidden sm:inline-flex" onClick={() => navigate('/register')}>
+                Sign Up
+              </button>
+              <button className="btn-outline-glow text-sm hidden sm:inline-flex" onClick={() => navigate('/login')}>
+                Login
+              </button>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -88,38 +117,39 @@ const Navbar = () => {
       {mobileOpen && (
         <div className="md:hidden border-t border-border/20 bg-white/95 backdrop-blur-sm" style={{ boxShadow: "0 -10px 40px rgba(0,0,0,0.1)" }}>
           <div className="px-3 py-2 space-y-1">
-            {navLinks.map((l) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-colors"
-              >
-                <l.icon className="w-4 h-4" />
-                {l.label}
-              </Link>
-            ))}
-
-            {/* Mobile search form */}
-            <form onSubmit={handleSearch} className="px-3 py-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-foreground/40" />
-                <input
-                  type="search"
-                  placeholder="Search destinations..."
-                  className="w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm bg-muted/50 border-muted/30 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-              </div>
-            </form>
-
-            <div className="px-3 py-2 space-y-1">
-              <button className="w-full text-left px-4 py-2.5 rounded-xl text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-colors text-sm">
-                Login
-              </button>
-              <button className="w-full text-left px-4 py-2.5 rounded-xl btn-gradient text-sm text-white hover:opacity-90 transition-opacity">
-                Sign Up
-              </button>
-            </div>
+            {isAuthenticated ? (
+              <>
+                <div className="px-4 py-2 text-sm text-foreground">{userName}</div>
+                <button
+                  onClick={() => {
+                    logout();
+                    toast({ title: "Logged out successfully!" });
+                  }}
+                  className="w-full text-left px-4 py-2.5 rounded-xl text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-colors text-sm"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <form onSubmit={handleSearch} className="px-3 py-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-foreground/40" />
+                    <input
+                      type="search"
+                      placeholder="Search destinations..."
+                      className="w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm bg-muted/50 border-muted/30 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                </form>
+                <button className="w-full text-left px-4 py-2.5 rounded-xl text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-colors text-sm" onClick={handleSignupSuccess}>
+                  Login
+                </button>
+                <button className="w-full text-left px-4 py-2.5 rounded-xl btn-gradient text-sm text-white hover:opacity-90 transition-opacity" onClick={handleSignupSuccess}>
+                  Sign Up
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

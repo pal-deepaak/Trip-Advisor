@@ -2,6 +2,7 @@ import { Mail, Lock, Plane } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { authAPI } from "@/services/api";
+import { useAuth } from "@/context/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -9,9 +10,9 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
-    console.log("logged in successfully")
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -19,6 +20,7 @@ const Login = () => {
     try {
       const response = await authAPI.login({ email, password });
       localStorage.setItem('token', response.token);
+      login(response.token, response.name || email.split('@')[0]);
       navigate('/search');
     } catch (err: any) {
       setError(err.message || 'Login failed');
