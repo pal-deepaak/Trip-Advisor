@@ -14,7 +14,7 @@ const ItineraryPlan = () => {
     // Get data from route state or search params
     const state = location.state;
     const city = state?.city || "";
-    const days = state?.days || "3";
+    const days = state?.days || "";
 
     const fetchItinerary = async (c: string, d: string) => {
       try {
@@ -27,7 +27,7 @@ const ItineraryPlan = () => {
           headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const res = await fetch("http://localhost:5000/api/itinerary", {
+        const res = await fetch("http://localhost:8000/itinerary", {
           method: "POST",
           headers: headers,
           body: JSON.stringify({
@@ -44,11 +44,21 @@ const ItineraryPlan = () => {
         if (data.error) {
           setError(data.error);
           setItineraryData(null);
+        } else if (!data.recommendations || data.recommendations.length === 0) {
+          setError("No recommendations found for the given criteria.");
+          setItineraryData(null);
         } else {
           setItineraryData(data);
         }
       } catch (err: any) {
-        setError(err.message || "Failed to generate itinerary. Please try again.");
+        console.error("Itinerary fetch error:", err);
+        if (err instanceof Error) {
+          setError(err.message);
+        } else if (typeof err === 'string') {
+          setError(err);
+        } else {
+          setError("Failed to generate itinerary. Please try again.");
+        }
         console.error(err);
       } finally {
         setLoading(false);

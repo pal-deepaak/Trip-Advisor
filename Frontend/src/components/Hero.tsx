@@ -70,23 +70,6 @@ const Hero = () => (
           Explore Destinations
         </Link>
       </div>
-
-      {/* Stats */}
-      <div
-        className="flex items-center justify-center gap-8 sm:gap-12 mt-16"
-        style={{ animation: "fade-up 0.7s cubic-bezier(0.16,1,0.3,1) 500ms forwards", opacity: 0 }}
-      >
-        {[
-          ["12.4K+", "Destinations"],
-          ["98.7%", "Satisfaction"],
-          ["2.1M", "Trips Planned"],
-        ].map(([val, label]) => (
-          <div key={label} className="text-center">
-            <div className="font-display font-bold text-2xl sm:text-3xl gradient-text">{val}</div>
-            <div className="text-xs sm:text-sm text-muted-foreground mt-1">{label}</div>
-          </div>
-        ))}
-      </div>
     </div>
   </section>
 );

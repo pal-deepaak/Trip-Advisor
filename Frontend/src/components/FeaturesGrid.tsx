@@ -4,7 +4,6 @@ import ScrollReveal from "./ScrollReveal";
 import { Brain, Route, Hotel, UtensilsCrossed, Compass, PiggyBank, CloudSun, Bookmark, MapIcon } from "lucide-react";
 
 const features = [
-  { icon: Brain, title: "AI Destination Analyzer", desc: "Get smart recommendations based on your preferences and travel history." },
   { icon: Route, title: "Smart Itinerary Generator", desc: "Auto-generate day-by-day plans optimized for time and budget." },
   { icon: Hotel, title: "Hotels", desc: "Browse curated hotels with AI-matched ratings and pricing." },
   { icon: UtensilsCrossed, title: "Restaurants", desc: "Discover local cuisines and top-rated dining experiences." },
