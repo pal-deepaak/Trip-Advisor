@@ -39,24 +39,15 @@ interface ItineraryViewerProps {
 
 const getTimeIcon = (time: string) => {
   const lowerTime = time.toLowerCase();
-  if (lowerTime.includes("morning") || lowerTime.includes("8:00") || lowerTime.includes("9:00") || lowerTime.includes("10:00") || lowerTime.includes("11:00")) {
-    return <Coffee className="w-4 h-4 text-amber-500" />;
-  }
-  if (lowerTime.includes("afternoon") || lowerTime.includes("12:00") || lowerTime.includes("1:00") || lowerTime.includes("2:00") || lowerTime.includes("3:00") || lowerTime.includes("4:00")) {
-    return <Sun className="w-4 h-4 text-orange-500" />;
-  }
-  if (lowerTime.includes("evening") || lowerTime.includes("5:00") || lowerTime.includes("6:00") || lowerTime.includes("7:00") || lowerTime.includes("8:00")) {
-    return <Moon className="w-4 h-4 text-indigo-500" />;
-  }
-  if (lowerTime.includes("lunch") || lowerTime.includes("food") || lowerTime.includes("meal") || lowerTime.includes("restaurant")) {
-    return <Utensils className="w-4 h-4 text-green-500" />;
-  }
+  if (lowerTime.includes("morning")) return <Coffee className="w-4 h-4 text-amber-500" />;
+  if (lowerTime.includes("afternoon")) return <Sun className="w-4 h-4 text-orange-500" />;
+  if (lowerTime.includes("evening")) return <Moon className="w-4 h-4 text-indigo-500" />;
+  if (lowerTime.includes("lunch") || lowerTime.includes("food")) return <Utensils className="w-4 h-4 text-green-500" />;
   return <Clock className="w-4 h-4 text-gray-500" />;
 };
 
 const ItineraryViewer = ({ data, onClose }: ItineraryViewerProps) => {
   const [activeDay, setActiveDay] = useState(0);
-  console.log("Itinerary data received:", data);
 
   if (data.error) {
     return (
@@ -75,8 +66,6 @@ const ItineraryViewer = ({ data, onClose }: ItineraryViewerProps) => {
       </div>
     );
   }
-
-  console.log("Rendering ItineraryViewer with data:", data);
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -187,53 +176,56 @@ const ItineraryViewer = ({ data, onClose }: ItineraryViewerProps) => {
               )}
             </div>
           )}
-        </div>
 
-        {/* Footer - Travel Tips & Budget */}
-        {(data.travel_tips || data.estimated_budget) && (
-          <div className="border-t bg-gray-50 p-4 shrink-0">
-            <div className="grid md:grid-cols-2 gap-4">
-              {data.travel_tips && (
-                <div>
-                  <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                    <Info className="w-4 h-4" />
-                    Travel Tips
-                  </h4>
-                  <ul className="space-y-1">
-                    {data.travel_tips.map((tip: string, idx: number) => (
-                      <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">
-                        <span className="text-blue-500 mt-1">•</span>
-                        {tip}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {data.estimated_budget && (
-                <div>
-                  <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                    <IndianRupee className="w-4 h-4" />
-                    Estimated Budget
-                  </h4>
-                  <div className="space-y-1 text-sm text-gray-600">
-                    <p className="font-medium text-gray-800">
-                      {data.estimated_budget.daily_estimate}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Category: <span className="capitalize">{data.estimated_budget.budget_category}</span>
-                    </p>
-                    {data.estimated_budget.includes && (
-                      <p className="text-xs text-gray-500">
-                        Includes: {data.estimated_budget.includes.join(", ")}
-                      </p>
-                    )}
+          {/* ✅ FIXED FOOTER INSIDE SCROLL */}
+          {(data.travel_tips || data.estimated_budget) && (
+            <div className="mt-6 border-t pt-4 bg-gray-50 rounded-xl p-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                
+                {data.travel_tips && (
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <Info className="w-4 h-4" />
+                      Travel Tips
+                    </h4>
+                    <ul className="space-y-1">
+                      {data.travel_tips.map((tip: string, idx: number) => (
+                        <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">
+                          <span className="text-blue-500 mt-1">•</span>
+                          {tip}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                </div>
-              )}
+                )}
+
+                {data.estimated_budget && (
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <IndianRupee className="w-4 h-4" />
+                      Estimated Budget
+                    </h4>
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <p className="font-medium text-gray-800">
+                        {data.estimated_budget.daily_estimate}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Category: <span className="capitalize">{data.estimated_budget.budget_category}</span>
+                      </p>
+                      {data.estimated_budget.includes && (
+                        <p className="text-xs text-gray-500">
+                          Includes: {data.estimated_budget.includes.join(", ")}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+        </div>
       </div>
     </div>
   );

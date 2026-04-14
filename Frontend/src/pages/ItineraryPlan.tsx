@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import ItineraryViewer from "@/components/ItineraryViewer";
 import { useNavigate, useLocation } from "react-router-dom";
+import { tripAPI, checkAuth, getAuthToken } from "@/services/api";
 
 const ItineraryPlan = () => {
   const navigate = useNavigate();
@@ -20,20 +21,21 @@ const ItineraryPlan = () => {
         setLoading(true);
         setError(null);
 
-        const userPrefsStr = localStorage.getItem("userPrefs");
-        const userPrefs = userPrefsStr ? JSON.parse(userPrefsStr) : {};
+        const token = getAuthToken();
+        const headers: any = { "Content-Type": "application/json" };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
 
-        const res = await fetch("http://localhost:8000/itinerary", {
+        const res = await fetch("http://localhost:5000/api/itinerary", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: headers,
           body: JSON.stringify({
             city: c,
             days: d,
-            interest: userPrefs.interest || "general",
-            budget: userPrefs.budget || "mid_range",
-            traveler_type: userPrefs.traveler_type || "family"
+            interest: "general",
+            budget: "mid_range",
+            traveler_type: "family"
           }),
         });
 
@@ -45,8 +47,8 @@ const ItineraryPlan = () => {
         } else {
           setItineraryData(data);
         }
-      } catch (err) {
-        setError("Failed to generate itinerary. Please try again.");
+      } catch (err: any) {
+        setError(err.message || "Failed to generate itinerary. Please try again.");
         console.error(err);
       } finally {
         setLoading(false);

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { authAPI, tripAPI, checkAuth, getAuthToken } from "@/services/api";
 import ItineraryPlan from "@/pages/ItineraryPlan";
 import { useNavigate } from "react-router-dom";
 
@@ -8,7 +9,58 @@ export const ItineraryProvider = ({ children }) => {
   const [itinerary, setItinerary] = useState(null);
   const [loading, setLoading] = useState(false);
   const [userPrefs, setUserPrefs] = useState({});
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const navigate = useNavigate();
+
+  // Check authentication on mount
+  useEffect(() => {
+    checkAuthentication();
+  }, []);
+
+  const checkAuthentication = async () => {
+    const token = getAuthToken();
+    if (token) {
+      try {
+        // Verify token validity if needed
+        setAuthLoading(false);
+      } catch (error) {
+        localStorage.removeItem('token');
+        setAuthLoading(false);
+      }
+    } else {
+      setAuthLoading(false);
+    }
+  };
+
+  const login = async (email, password) => {
+    try {
+      const response = await authAPI.login({ email, password });
+      localStorage.setItem('token', response.token);
+      setUser(response.user);
+      return { success: true, data: response };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const signup = async (userData) => {
+    try {
+      const response = await authAPI.signup(userData);
+      localStorage.setItem('token', response.token);
+      setUser(response.user);
+      return { success: true, data: response };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+    setItinerary(null);
+    navigate('/');
+  };
 
   const generateItinerary = async (city, prefs = {}) => {
     if (!city) return;
@@ -17,9 +69,15 @@ export const ItineraryProvider = ({ children }) => {
     setUserPrefs(prefs);
 
     try {
-      const res = await fetch("http://localhost:8000/itinerary", {
+      const token = getAuthToken();
+      const headers = { "Content-Type": "application/json" };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const res = await fetch("http://localhost:5000/api/itinerary", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: headers,
         body: JSON.stringify({
           city,
           days: prefs.days || 3,
@@ -49,7 +107,13 @@ export const ItineraryProvider = ({ children }) => {
     itinerary,
     loading,
     userPrefs,
-    generateItinerary
+    user,
+    authLoading,
+    generateItinerary,
+    login,
+    signup,
+    logout,
+    checkAuthentication
   };
 
   return (
