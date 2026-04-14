@@ -4,11 +4,33 @@ import ScrollReveal from "./ScrollReveal";
 
 const ItinerarySection = ({ itinerary }) => {
   const [expanded, setExpanded] = useState(0);
+  console.log(itinerary)
 
-  // 🔥 backend JSON → array में convert
-  const days = itinerary ? Object.entries(itinerary) : [];
+  // Handle both old format (object with day keys) and new format (structured itinerary)
+  let days = [];
+  if (itinerary) {
+    // Check if it's the new structured format from /itinerary endpoint
+    if (itinerary.days && Array.isArray(itinerary.days)) {
+      // New format: convert days array to entries format expected by this component
+      days = itinerary.days.map((dayPlan, index) => [
+        `Day ${dayPlan.day || index + 1}`,
+        (dayPlan.activities || []).map(activity => ({
+          place: activity.place || "-",
+          activity: activity.activity || "-",
+          transport: "Local Transport", // Default since not in AI response
+          time: activity.time || "-"
+        }))
+      ]);
+    } else {
+      // Old format: direct object with day keys - ensure items are arrays
+      days = Object.entries(itinerary).map(([day, items]) => [
+        day,
+        Array.isArray(items) ? items : []
+      ]);
+    }
+  }
 
-  if (!itinerary) {
+  if (!itinerary || days.length === 0) {
     return null; // अगर data नहीं है तो कुछ मत दिखा
   }
 
