@@ -56,7 +56,7 @@ const getTimeIcon = (time: string) => {
 
 const ItineraryViewer = ({ data, onClose }: ItineraryViewerProps) => {
   const [activeDay, setActiveDay] = useState(0);
-  console.log(data)
+  console.log("Itinerary data received:", data);
 
   if (data.error) {
     return (
@@ -75,6 +75,8 @@ const ItineraryViewer = ({ data, onClose }: ItineraryViewerProps) => {
       </div>
     );
   }
+
+  console.log("Rendering ItineraryViewer with data:", data);
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">

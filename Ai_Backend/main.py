@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 from pydantic import BaseModel
 
-import os 
+import os
 from dotenv import load_dotenv
 from google import genai
 import json
@@ -63,92 +63,125 @@ def calculate_score(row, user):
 
     return score
 
-
 @app.post("/recommend")
-
 def recommend(user_input: dict):
     """
     Provide personalized destination recommendations based on user preferences.
     Uses weighted scoring system to rank destinations by relevance.
     """
-    user_input = {k: str(v).lower() for k, v in user_input.items()}
+    try:
+        user_input = {k: str(v).lower() for k, v in user_input.items()}
 
-    # Create a copy of data for scoring
-    scored_data = data.copy()
+        # Create a copy of data for scoring
+        scored_data = data.copy()
 
-    # Calculate relevance score for each destination
-    scored_data["relevance_score"] = scored_data.apply(
-        lambda row: calculate_score(row, user_input), axis=1
-    )
+        # Calculate relevance score for each destination
+        scored_data["relevance_score"] = scored_data.apply(
+            lambda row: calculate_score(row, user_input), axis=1
+        )
 
-    # Filter out invalid entries
-    scored_data = scored_data[
-        scored_data["city"].notna() &
-        (scored_data["city"].str.lower() != "unknown")
-    ]
+        # Filter out invalid entries
+        scored_data = scored_data[
+            scored_data["city"].notna() &
+            (scored_data["city"].str.lower() != "unknown")
+        ]
 
-    # Apply preference-based bonuses/penalties
-    activities = user_input.get("activities")
-    region = user_input.get("region")
-    budget = user_input.get("budget")
+        # Apply preference-based bonuses/penalties
+        activities = user_input.get("activities")
+        region = user_input.get("region")
+        budget = user_input.get("budget")
 
-    message_parts = []
+        message_parts = []
 
-    # Activity bonus - significant boost for exact match
-    if activities:
-        activity_match = scored_data["activities"] == activities
-        scored_data.loc[activity_match, "relevance_score"] += 8
-        if not activity_match.any():
-            message_parts.append(f"No exact matches for '{activities}' activities found")
+        # Activity bonus - significant boost for exact match
+        if activities:
+            activity_match = scored_data["activities"] == activities
+            scored_data.loc[activity_match, "relevance_score"] += 8
+            if not activity_match.any():
+                message_parts.append(f"No exact matches for '{activities}' activities found")
 
-    # Region bonus - moderate boost for exact match
-    if region:
-        region_match = scored_data["region"] == region
-        scored_data.loc[region_match, "relevance_score"] += 4
-        if not region_match.any():
-            message_parts.append(f"No destinations found in '{region}' region")
+        # Region bonus - moderate boost for exact match
+        if region:
+            region_match = scored_data["region"] == region
+            scored_data.loc[region_match, "relevance_score"] += 4
+            if not region_match.any():
+                message_parts.append(f"No destinations found in '{region}' region")
 
-    # Budget bonus - small boost for exact match
-    if budget:
-        budget_match = scored_data["budget_category"] == budget
-        scored_data.loc[budget_match, "relevance_score"] += 2
-        if not budget_match.any():
-            message_parts.append(f"No destinations found for '{budget}' budget")
+        # Budget bonus - small boost for exact match
+        if budget:
+            budget_match = scored_data["budget_category"] == budget
+            scored_data.loc[budget_match, "relevance_score"] += 2
+            if not budget_match.any():
+                message_parts.append(f"No destinations found for '{budget}' budget")
 
-    # Sort by relevance score (descending) then by rating/popularity as tie-breakers
-    scored_data = scored_data.sort_values(
-        by=["relevance_score", "rating", "popularity_score"],
-        ascending=False
-    )
+        # Sort by relevance score (descending) then by rating/popularity as tie-breakers
+        scored_data = scored_data.sort_values(
+            by=["relevance_score", "rating", "popularity_score"],
+            ascending=False
+        )
 
-    # Get top destinations (ensure variety by limiting per city)
-    top_destinations = scored_data.groupby("city").head(3).head(15)
+        # Get top destinations (ensure variety by limiting per city)
+        top_destinations = scored_data.groupby("city").head(3).head(15)
 
-    # Prepare response with detailed destination information
-    recommendations = []
-    for _, row in top_destinations.iterrows():
-        recommendations.append({
-            "destination": row["destination"],
-            "city": row["city"],
-            "region": row["region"],
-            "type": row["type"],
-            "activities": row["activities"],
-            "budget_category": row["budget_category"],
-            "best_season": row["best_season"],
-            "rating": float(row["rating"]),
-            "popularity_score": float(row["popularity_score"]),
-            "description": row["description"],
-            "relevance_score": float(row["relevance_score"])
-        })
+        # Prepare response with detailed destination information
+        recommendations = []
+        for _, row in top_destinations.iterrows():
+            recommendations.append({
+                "destination": row["destination"],
+                "city": row["city"],
+                "region": row["region"],
+                "type": row["type"],
+                "activities": row["activities"],
+                "budget_category": row["budget_category"],
+                "best_season": row["best_season"],
+                "rating": float(row["rating"]),
+                "popularity_score": float(row["popularity_score"]),
+                "description": row["description"],
+                "relevance_score": float(row["relevance_score"])
+            })
 
-    # Generate summary message
-    if message_parts:
-        message = "; ".join(message_parts) + ". Showing best available matches."
-    else:
-        message = f"Found {len(recommendations)} personalized recommendations for you!"
+        # Generate summary message
+        if message_parts:
+            message = "; ".join(message_parts) + ". Showing best available matches."
+        else:
+            message = f"Found {len(recommendations)} personalized recommendations for you!"
 
-    # Fallback to popular destinations if no relevant matches
-    if len(recommendations) == 0:
+        # Fallback to popular destinations if no relevant matches
+        if len(recommendations) == 0:
+            fallback_data = data[
+                data["city"].notna() &
+                (data["city"].str.lower() != "unknown")
+            ].sort_values(
+                by=["rating", "popularity_score"],
+                ascending=False
+            ).head(10)
+
+            recommendations = []
+            for _, row in fallback_data.iterrows():
+                recommendations.append({
+                    "destination": row["destination"],
+                    "city": row["city"],
+                    "region": row["region"],
+                    "type": row["type"],
+                    "activities": row["activities"],
+                    "budget_category": row["budget_category"],
+                    "best_season": row["best_season"],
+                    "rating": float(row["rating"]),
+                    "popularity_score": float(row["popularity_score"]),
+                    "description": row["description"],
+                    "relevance_score": float(row["rating"] * 0.5 + row["popularity_score"] * 0.03)
+                })
+
+            message = "Showing top-rated destinations based on popularity and rating."
+
+        return {
+            "message": message,
+            "recommendations": recommendations,
+            "total_found": len(recommendations)
+        }
+    except Exception as e:
+        print(f"Recommendation error: {e}")
+        # Fallback to simple popular destinations
         fallback_data = data[
             data["city"].notna() &
             (data["city"].str.lower() != "unknown")
@@ -173,16 +206,14 @@ def recommend(user_input: dict):
                 "relevance_score": float(row["rating"] * 0.5 + row["popularity_score"] * 0.03)
             })
 
-        message = "Showing top-rated destinations based on popularity and rating."
-
-    return {
-        "message": message,
-        "recommendations": recommendations,
-        "total_found": len(recommendations)
-    }
+        return {
+            "message": "Showing popular destinations as fallback.",
+            "recommendations": recommendations,
+            "total_found": len(recommendations)
+        }
 
 @app.post("/itinerary")
-def generat_itinerary(user_input: dict):
+def generate_itinerary(user_input: dict):
     try:
         city = user_input.get('city', '').strip()
         city_lower = city.lower()
@@ -346,13 +377,10 @@ def create_fallback_itinerary(city: str, days: int, interest: str, budget: str, 
             "includes": ["Food", "Local transport", "Entry fees"]
         }
     }
-    
 
 class ChatRequest(BaseModel):
     message: str
     session_id: str = "default"
-
-
 # Store conversation history per session
 chat_sessions: dict[str, list] = {}
 
@@ -381,8 +409,6 @@ Guidelines:
 Available data covers: North India (mountains, heritage), South India (beaches, temples),
 East India (culture, nature), West India (beaches, deserts, cities), Central India (wildlife, tribal)
 """
-
-
 def extract_intent_and_entities(user_msg: str, conversation_history: list) -> dict:
     """Use AI to extract intent and entities from user message with conversation context."""
 
@@ -431,8 +457,6 @@ Return ONLY valid JSON (no extra text):
             "entities": {},
             "needs_followup": False
         }
-
-
 def generate_travel_response(intent_data: dict, user_msg: str, conversation_history: list) -> dict:
     """Generate appropriate response based on detected intent."""
 
@@ -493,7 +517,7 @@ Mention 2-3 specific places if possible and why they match the user's preference
 
         # Generate itinerary
         try:
-            itinerary_result = generat_itinerary({
+            itinerary_result = generate_itinerary({
                 "city": city,
                 "days": int(days) if isinstance(days, int) else int(days) if str(days).isdigit() else 1,
                 "interest": interest
@@ -587,8 +611,6 @@ Respond as a friendly, knowledgeable travel expert.
             contents=chat_prompt
         )
         return {"type": "chat", "data": response.text}
-
-
 @app.post("/chat")
 def chat(user_input: dict):
     """
@@ -640,10 +662,10 @@ User: "{user_msg}"
 
 Respond helpfully as a travel expert.
 """
-            response = client.models.generate_content(
+            response = client2.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=fallback_prompt
             )
             return {"type": "chat", "data": response.text}
         except Exception as e:
-            print("ERROR:", str(e))   
+            print("ERROR:", str(e))

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ScrollReveal from "./ScrollReveal";
-import { Brain,Route,Hotel,UtensilsCrossed,Compass,PiggyBank,CloudSun,Bookmark ,MapIcon} from "lucide-react";
+import { Brain, Route, Hotel, UtensilsCrossed, Compass, PiggyBank, CloudSun, Bookmark, MapIcon } from "lucide-react";
 
 const features = [
   { icon: Brain, title: "AI Destination Analyzer", desc: "Get smart recommendations based on your preferences and travel history." },
@@ -25,8 +25,7 @@ const FeaturesGrid = () => {
     setShowInputForm(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    console.log("form submitted")
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (city && days) {
       navigate('/itinerary', {

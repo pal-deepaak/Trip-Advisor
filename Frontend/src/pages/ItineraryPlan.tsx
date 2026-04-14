@@ -1,25 +1,25 @@
 import { useState, useEffect } from "react";
 import ItineraryViewer from "@/components/ItineraryViewer";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const ItineraryPlan = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const cityFromUrl = searchParams.get("city");
-  const daysFromUrl = searchParams.get("days");
-
-  const [city, setCity] = useState(cityFromUrl || "");
-  const [days, setDays] = useState(daysFromUrl || "3");
+  const location = useLocation();
   const [itineraryData, setItineraryData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [userInputCity, setUserInputCity] = useState(cityFromUrl || "");
-  const [userInputDays, setUserInputDays] = useState(daysFromUrl || "3");
 
   useEffect(() => {
+    // Get data from route state or search params
+    const state = location.state;
+    const city = state?.city || "";
+    const days = state?.days || "3";
+
     const fetchItinerary = async (c: string, d: string) => {
       try {
-        // Get user preferences from localStorage or context
+        setLoading(true);
+        setError(null);
+
         const userPrefsStr = localStorage.getItem("userPrefs");
         const userPrefs = userPrefsStr ? JSON.parse(userPrefsStr) : {};
 
@@ -41,6 +41,7 @@ const ItineraryPlan = () => {
 
         if (data.error) {
           setError(data.error);
+          setItineraryData(null);
         } else {
           setItineraryData(data);
         }
@@ -54,8 +55,11 @@ const ItineraryPlan = () => {
 
     if (city && days) {
       fetchItinerary(city, days);
+    } else {
+      setLoading(false);
+      setError("No city or days provided");
     }
-  }, [city, days]);
+  }, [location.state]);
 
   if (loading) {
     return (
@@ -90,9 +94,25 @@ const ItineraryPlan = () => {
           <p className="text-gray-600">{error}</p>
           <button
             onClick={() => navigate("/")}
-            className="btn-gradient px-6 py-3 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
+            className="btn-gradient px-6 py-3 rounded-lg text-white font-medium hover:opacity-90 transition-opacity mt-4"
           >
             Back to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!itineraryData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-bold text-gray-800">No itinerary data available</h2>
+          <button
+            onClick={() => navigate("/")}
+            className="btn-gradient px-6 py-3 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
+          >
+            Back to Search
           </button>
         </div>
       </div>
@@ -102,58 +122,8 @@ const ItineraryPlan = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-12">
-        <div className="max-w-2xl mx-auto">
-          <div className="mb-8">
-            <button
-              onClick={() => navigate("/")}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
-            >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"></path>
-              </svg>
-              Back to Search
-            </button>
-          </div>
-
-          {/* Input form for city and days */}
-          <div className="glass-card p-8 mb-8">
-            <h2 className="font-display font-bold text-2xl text-foreground mb-6">Generate Your Itinerary</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Destination City</label>
-                <input
-                  type="text"
-                  placeholder="Enter city name"
-                  value={userInputCity}
-                  onChange={(e) => setUserInputCity(e.target.value)}
-                  className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Number of Days</label>
-                <input
-                  type="number"
-                  min="1"
-                  placeholder="Enter number of days"
-                  value={userInputDays}
-                  onChange={(e) => setUserInputDays(e.target.value)}
-                  className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              {userInputCity && userInputDays && (
-                <button
-                  onClick={generateItinerary}
-                  className="btn-gradient w-full"
-                >
-                  Generate Itinerary
-                </button>
-              )}
-            </div>
-          </div>
-
-          {itineraryData && (
-            <ItineraryViewer data={itineraryData} onClose={() => navigate("/")} />
-          )}
+        <div className="max-w-4xl mx-auto">
+          <ItineraryViewer data={itineraryData} onClose={() => navigate("/")} />
         </div>
       </div>
     </div>
