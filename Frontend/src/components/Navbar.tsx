@@ -74,8 +74,8 @@ const Navbar = () => {
           <button className="relative p-2 rounded-lg hover:bg-muted/50 transition-colors group" title="User Menu">
             <User className="w-5 h-5 text-foreground/60 group-hover:text-primary transition-colors" />
           </button>
-          <button className="btn-gradient text-sm !px-5 !py-2 hidden sm:inline-flex">Sign Up</button>
-          <button className="btn-outline-glow text-sm hidden sm:inline-flex">Login</button>
+          <button className="btn-gradient text-sm !px-5 !py-2 hidden sm:inline-flex" onClick={() => navigate('/register')}>Sign Up</button>
+          <button className="btn-outline-glow text-sm hidden sm:inline-flex" onClick={() => navigate('/login')}>Login</button>
         </div>
 
         {/* Mobile Menu Toggle */}

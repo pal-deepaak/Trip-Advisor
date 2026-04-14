@@ -11,6 +11,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
+    console.log("logged in successfully")
     e.preventDefault();
     setLoading(true);
     setError(null);
