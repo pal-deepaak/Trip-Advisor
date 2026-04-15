@@ -294,7 +294,7 @@ IMPORTANT: Return ONLY the JSON object, nothing else. No markdown formatting.
 """
 
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3-flash-preview",
             contents=prompt
         )
         plan_text = response.text.strip()

@@ -17,76 +17,83 @@ const ItineraryPlan = () => {
     const formData = new FormData(e.target);
     const city = formData.get('city');
     const days = formData.get('days');
-    // Navigate with state to show the form on the itinerary page
+    // Navigate to trigger API call, then show form with results
     navigate('/itinerary', {
-      state: { showInputForm: true, city, days }
+      state: { city, days }
     });
   };
 
   useEffect(() => {
-    // Get data from route state or search params
     const state = location.state;
     const city = state?.city || "";
     const days = state?.days || "";
-    // Show input form if specified in route state
-    if (state?.showInputForm) {
+
+    // Determine if we should show the input form based on route state
+    const shouldShowInputForm = state?.showInputForm || false;
+    if (shouldShowInputForm) {
       setShowInputForm(true);
+      setLoading(false); // No loading needed if showing the form
+      return; // Exit effect processing
     }
 
-    const fetchItinerary = async (c: string, d: string) => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const token = getAuthToken();
-        const headers: any = { "Content-Type": "application/json" };
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
-
-        const res = await fetch("http://localhost:8000/itinerary", {
-          method: "POST",
-          headers: headers,
-          body: JSON.stringify({
-            city: c,
-            days: d,
-            interest: "general",
-            budget: "mid_range",
-            traveler_type: "family"
-          }),
-        });
-
-        const data = await res.json();
-
-        if (data.error) {
-          setError(data.error);
-          setItineraryData(null);
-        } else if (!data.recommendations || data.recommendations.length === 0) {
-          setError("No recommendations found for the given criteria.");
-          setItineraryData(null);
-        } else {
-          setItineraryData(data);
-        }
-      } catch (err: any) {
-        console.error("Itinerary fetch error:", err);
-        if (err instanceof Error) {
-          setError(err.message);
-        } else if (typeof err === 'string') {
-          setError(err);
-        } else {
-          setError("Failed to generate itinerary. Please try again.");
-        }
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    // If we are not explicitly showing the form, check if we have city and days to fetch.
+    // If not, we should show the form to get user input.
     if (city && days) {
-      fetchItinerary(city, days);
+      const fetchItinerary = async () => {
+        try {
+          setLoading(true);
+          setError(null);
+
+          const token = getAuthToken();
+          const headers: any = { "Content-Type": "application/json" };
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+
+          const res = await fetch("http://localhost:8000/itinerary", {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify({
+              city: city, // Use city from closure
+              days: days, // Use days from closure
+              interest: "general",
+              budget: "mid_range",
+              traveler_type: "family"
+            }),
+          });
+
+          const data = await res.json();
+          console.log("api response : ",data)
+
+          if (data.error) {
+            setError(data.error);
+            setItineraryData(null);
+          } else if (!data.itineraries || data.itineraries.length === 0) {
+            setError("No recommendations found for the given criteria.");
+            setItineraryData(null);
+          } else {
+            setItineraryData(data);
+          }
+        } catch (err: any) {
+          console.error("Itinerary fetch error:", err);
+          if (err instanceof Error) {
+            setError(err.message);
+          } else if (typeof err === 'string') {
+            setError(err);
+          } else {
+            setError("Failed to generate itinerary. Please try again.");
+          }
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchItinerary();
     } else {
-      setLoading(false);
-      setError("No city or days provided");
+      // If city or days are missing and we're not explicitly showing the form,
+      // then we *must* show the form to get user input.
+      setShowInputForm(true);
+      setLoading(false); // No loading needed if showing the form
+      setError("Please provide a city and number of days to generate your itinerary."); // More helpful error
     }
   }, [location.state]);
 

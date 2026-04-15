@@ -50,9 +50,19 @@ const getTimeIcon = (time: string) => {
 const ItineraryViewer = ({ data, onClose }: ItineraryViewerProps) => {
   const [activeDay, setActiveDay] = useState(0);
 
+  // Handle null or undefined data
+  if (!data) {
+    console.warn("ItineraryViewer received null or undefined data.");
+    return (
+      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl max-w-2xl w-full p-6">
+          <p className="text-gray-600">Loading itinerary...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (data.error) {
-    
     return (
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
@@ -64,6 +74,12 @@ const ItineraryViewer = ({ data, onClose }: ItineraryViewerProps) => {
               </button>
             </div>
             <p className="text-gray-600">{data.error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="btn-gradient mt-4 inline-flex items-center gap-2"
+            >
+              Try Again
+            </button>
           </div>
         </div>
       </div>

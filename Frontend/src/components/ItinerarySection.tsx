@@ -13,7 +13,27 @@ const ItinerarySection = ({ itinerary }) => {
   // Handle error response from API
   if (itinerary.error) {
     console.log('Itinerary error:', itinerary.error);
-    return null; // Or show an error message
+    // Show error message to user
+    return (
+      <div className="section-padding">
+        <div className="container mx-auto max-w-2xl">
+          <div className="glass-card p-8 text-center">
+            <h2 className="font-display font-bold text-2xl text-red-600 mb-4">
+              Unable to Generate Itinerary
+            </h2>
+            <p className="text-muted-foreground mb-6">
+              {itinerary.error || "Something went wrong. Please try again."}
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="btn-gradient inline-flex items-center gap-2"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   console.log('Itinerary received:', itinerary);
