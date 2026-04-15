@@ -1,14 +1,81 @@
 import { Plane, MapPin, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import heroImg from "@/assets/hero-travel.jpg";
+import { useState } from "react";
 
-const Hero = () => (
-  <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+
+
+
+const Hero = () => {
+
+  const navigate = useNavigate();
+  const [showInputForm, setShowInputForm] = useState(false);
+  const [city, setCity] = useState("");
+  const [days, setDays] = useState("");
+
+  const handleItineraryClick = () => {
+    console.log("button clicked")
+    navigate('/search', {
+      state: { showInputForm: true }
+    })
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (city && days) {
+      navigate('/itinerary', {
+        state: {
+          city: city,
+          days: days
+        }
+      });
+    }
+  };
+
+  return(
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
     {/* Background image */}
     <div className="absolute inset-0">
       <img src={heroImg} alt="" className="w-full h-full object-cover opacity-30" />
       <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
     </div>
+
+    {showInputForm && (
+          <div className="glass-card p-6 sm:p-8 mb-8">
+            <h2 className="font-display font-bold text-2xl text-foreground mb-6">Plan Your Itinerary</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Destination City</label>
+                <input
+                  type="text"
+                  placeholder="Enter city name"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Number of Days</label>
+                <input
+                  type="number"
+                  min="1"
+                  placeholder="Enter number of days"
+                  value={days}
+                  onChange={(e) => setDays(e.target.value)}
+                  className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="btn-gradient w-full"
+              >
+                Generate Itinerary
+              </button>
+            </form>
+          </div>
+        )}
 
     {/* Animated globe */}
     <div className="absolute right-[10%] top-1/2 -translate-y-1/2 hidden lg:block">
@@ -63,15 +130,19 @@ const Hero = () => (
         className="flex flex-col sm:flex-row items-center justify-center gap-4"
         style={{ animation: "fade-up 0.7s cubic-bezier(0.16,1,0.3,1) 350ms forwards", opacity: 0 }}
       >
-        <Link to="/search" className="btn-gradient text-base">
+  
+        <button className="btn-gradient text-base"
+        onClick={handleItineraryClick}>
           Start Planning
-        </Link>
+        </button>
         <Link to="/things-to-do" className="btn-outline-glow text-base">
           Explore Destinations
         </Link>
       </div>
     </div>
   </section>
-);
+  )
+
+}
 
 export default Hero;

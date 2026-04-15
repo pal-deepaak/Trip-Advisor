@@ -4,14 +4,12 @@ import ScrollReveal from "./ScrollReveal";
 import { Brain, Route, Hotel, UtensilsCrossed, Compass, PiggyBank, CloudSun, Bookmark, MapIcon } from "lucide-react";
 
 const features = [
-  { icon: Route, title: "Smart Itinerary Generator", desc: "Auto-generate day-by-day plans optimized for time and budget." },
-  { icon: Hotel, title: "Hotels", desc: "Browse curated hotels with AI-matched ratings and pricing." },
-  { icon: UtensilsCrossed, title: "Restaurants", desc: "Discover local cuisines and top-rated dining experiences." },
-  { icon: Compass, title: "Things to Do", desc: "Adventure, culture, nightlife — find activities that match your vibe." },
-  { icon: MapIcon, title: "Travel Routes", desc: "Visualize connected routes between destinations and stops." },
-  { icon: PiggyBank, title: "Budget Planner", desc: "Track expenses with smart breakdowns and savings suggestions." },
-  { icon: CloudSun, title: "Weather Forecast", desc: "Check real-time weather conditions for any destination." },
-  { icon: Bookmark, title: "Saved Trips", desc: "Save and revisit your favorite itineraries anytime." },
+  { icon: Route, title: "Smart Itinerary Generator", desc: "Auto-generate day-by-day plans optimized for time and budget.", path: (city) => `/itinerary?city=${encodeURIComponent(city)}` },
+  { icon: Hotel, title: "Hotels", desc: "Browse curated hotels with AI-matched ratings and pricing.", type: 'city' },
+  { icon: UtensilsCrossed, title: "Restaurants", desc: "Discover local cuisines and top-rated dining experiences.", type: 'city' },
+  { icon: Compass, title: "Things to Do", desc: "Adventure, culture, nightlife — find activities that match your vibe.", path: '/activities' },
+  { icon: CloudSun, title: "Weather Forecast", desc: "Check real-time weather conditions for any destination.", type: 'city' },
+  { icon: Bookmark, title: "Saved Trips", desc: "Save and revisit your favorite itineraries anytime.", path: '/saved-trips' },
 ];
 
 const FeaturesGrid = () => {
@@ -20,8 +18,38 @@ const FeaturesGrid = () => {
   const [city, setCity] = useState("");
   const [days, setDays] = useState("");
 
+  // City mapping for routes
+  const cityRoutes = {
+    'chandigarh': '/travel/recommendations/chandigarh',
+    'manali': '/travel/recommendations/manali',
+    'panchkula': '/travel/recommendations/panchkula',
+    'shimla': '/travel/recommendations/shimla'
+  };
+
   const handleItineraryClick = () => {
     setShowInputForm(true);
+  };
+
+  const handleCityClick = (cityName, featureType) => {
+    const cityLower = cityName.toLowerCase();
+    if (featureType === 'city') {
+      // Navigate to recommendations for the city
+      const route = cityRoutes[cityLower];
+      if (route) {
+        navigate(route);
+      }
+    }
+  };
+
+  const handleFeatureClick = (feature) => {
+    if (feature.type === 'city') {
+      handleCityClick(city, feature.type);
+    } else if (feature.path) {
+      const path = typeof feature.path === 'function'
+        ? feature.path(city)
+        : feature.path;
+      navigate(path);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -88,7 +116,7 @@ const FeaturesGrid = () => {
             <ScrollReveal key={f.title} delay={i * 70}>
               <div
                 className="glass-card-hover p-6 h-full group cursor-pointer transition-all duration-300 hover:shadow-lg"
-                onClick={f.title === "Smart Itinerary Generator" ? handleItineraryClick : undefined}
+                onClick={() => handleFeatureClick(f)}
               >
                 <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-4 transition-all duration-500 group-hover:bg-primary/20">
                   <f.icon className="w-5 h-5 text-primary" />

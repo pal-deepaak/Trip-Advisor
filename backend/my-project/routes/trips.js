@@ -156,7 +156,7 @@ router.get('/weather/:city', async (req, res) => {
         const city = req.params.city;
         const apiKey = "940e64c0a797925ce21d6e54e8a1bd4e"; // OpenWeatherMap se milegi
         const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`;
-        
+
         const response = await axios.get(url);
         res.json({
             temp: response.data.main.temp,
@@ -167,18 +167,71 @@ router.get('/weather/:city', async (req, res) => {
         res.status(500).json({ msg: "Weather fetch fail ho gaya" });
     }
 });
-// 5. Things to do (Activities) save karne ke liye
-router.put('/save-activities/:id', async (req, res) => {
-    try {
-        const { activitiesList } = req.body;
-        const trip = await Trip.findByIdAndUpdate(
-            req.params.id.trim(),
-            { $set: { activities: activitiesList } }, 
-            { new: true }
-        );
 
-        if (!trip) return res.status(404).json({ msg: 'Trip not found' });
-        res.json(trip);
+// 7. Get saved trips for a user
+router.get('/saved-trips/:userId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+
+        // In a real app, this would fetch from database
+        res.json({
+            userId: userId,
+            savedTrips: [
+                {
+                    id: "trip1",
+                    destination: "Chandigarh",
+                    startDate: "2026-05-01",
+                    endDate: "2026-05-05",
+                    budget: 15000,
+                    saved: true
+                },
+                {
+                    id: "trip2",
+                    destination: "Manali",
+                    startDate: "2026-06-15",
+                    endDate: "2026-06-20",
+                    budget: 25000,
+                    saved: true
+                }
+            ]
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// 8. Get travel routes for a city
+router.get('/routes/:city', async (req, res) => {
+    try {
+        const city = req.params.city.toLowerCase();
+
+        // Route visualization data
+        const routesData = {
+            chandigarh: {
+                routes: [
+                    { from: "Chandigarh", to: "Manali", distance: "300 km", duration: "6 hours" },
+                    { from: "Chandigarh", to: "Shimla", distance: "120 km", duration: "3 hours" }
+                ]
+            },
+            manali: {
+                routes: [
+                    { from: "Manali", to: "Chandigarh", distance: "300 km", duration: "6 hours" },
+                    { from: "Manali", to: "Leh", distance: "400 km", duration: "8 hours" }
+                ]
+            },
+            shimla: {
+                routes: [
+                    { from: "Shimla", to: "Chandigarh", distance: "120 km", duration: "3 hours" },
+                    { from: "Shimla", to: "Manali", distance: "400 km", duration: "8 hours" }
+                ]
+            }
+        };
+
+        res.json({
+            city: city.charAt(0).toUpperCase() + city.slice(1),
+            routes: routesData[city]?.routes || []
+        });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');

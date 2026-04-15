@@ -4,7 +4,19 @@ import ScrollReveal from "./ScrollReveal";
 
 const ItinerarySection = ({ itinerary }) => {
   const [expanded, setExpanded] = useState(0);
-  console.log(itinerary)
+
+  // Handle null/undefined itinerary gracefully
+  if (!itinerary) {
+    return null;
+  }
+
+  // Handle error response from API
+  if (itinerary.error) {
+    console.log('Itinerary error:', itinerary.error);
+    return null; // Or show an error message
+  }
+
+  console.log('Itinerary received:', itinerary);
 
   // Handle both old format (object with day keys) and new format (structured itinerary)
   let days = [];

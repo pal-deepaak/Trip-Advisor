@@ -9,12 +9,29 @@ const ItineraryPlan = () => {
   const [itineraryData, setItineraryData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showInputForm, setShowInputForm] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Handle form submission logic here
+    const formData = new FormData(e.target);
+    const city = formData.get('city');
+    const days = formData.get('days');
+    // Navigate with state to show the form on the itinerary page
+    navigate('/itinerary', {
+      state: { showInputForm: true, city, days }
+    });
+  };
 
   useEffect(() => {
     // Get data from route state or search params
     const state = location.state;
     const city = state?.city || "";
     const days = state?.days || "";
+    // Show input form if specified in route state
+    if (state?.showInputForm) {
+      setShowInputForm(true);
+    }
 
     const fetchItinerary = async (c: string, d: string) => {
       try {
@@ -135,6 +152,38 @@ const ItineraryPlan = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
+          {showInputForm && (
+            <div className="glass-card p-6 sm:p-8 mb-8">
+              <h2 className="font-display font-bold text-2xl text-foreground mb-6">Plan Your Itinerary</h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Destination City</label>
+                  <input
+                    type="text"
+                    placeholder="Enter city name"
+                    className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Number of Days</label>
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="Enter number of days"
+                    className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="btn-gradient w-full"
+                >
+                  Generate Itinerary
+                </button>
+              </form>
+            </div>
+          )}
           <ItineraryViewer data={itineraryData} onClose={() => navigate("/")} />
         </div>
       </div>

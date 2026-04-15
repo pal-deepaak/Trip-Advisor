@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X, Clock, MapPin, Info, Utensils, Sun, Moon, Coffee, Star, IndianRupee } from "lucide-react";
+import { error } from "console";
 
 interface Activity {
   time: string;
@@ -49,7 +50,9 @@ const getTimeIcon = (time: string) => {
 const ItineraryViewer = ({ data, onClose }: ItineraryViewerProps) => {
   const [activeDay, setActiveDay] = useState(0);
 
+
   if (data.error) {
+    
     return (
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
