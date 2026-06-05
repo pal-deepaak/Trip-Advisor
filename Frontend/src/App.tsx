@@ -16,8 +16,6 @@ import SearchPage from "./pages/SearchPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
-import ItineraryPlan from "./pages/ItineraryPlan";
-
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -37,7 +35,7 @@ const App = () => (
               <Route path="/search" element={<SearchPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/itinerary" element={<ItineraryPlan />} />
+              {/* Itinerary route removed - ItineraryPlan file deleted */}
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Footer />

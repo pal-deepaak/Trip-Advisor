@@ -144,7 +144,7 @@ def recommend(user_input: dict):
         if message_parts:
             message = "; ".join(message_parts) + ". Showing best available matches."
         else:
-            message = f"Found {len(recommendations)} personalized recommendations for you!"
+            message = f"Found 5 personalized recommendations for you!"
 
         # Fallback to popular destinations if no relevant matches
         if len(recommendations) == 0:

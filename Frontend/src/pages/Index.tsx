@@ -4,7 +4,7 @@ import FeaturesGrid from "@/components/FeaturesGrid";
 import HotelsSection from "@/components/HotelsSection";
 import RestaurantsSection from "@/components/RestaurantsSection";
 import ActivitiesSection from "@/components/ActivitiesSection";
-import ItinerarySection from "@/components/ItinerarySection";
+// ItinerarySection removed - file deleted
 import BudgetSection from "@/components/BudgetSection";
 import WeatherSection from "@/components/WeatherSection";
 import SavedTrips from "@/components/SavedTrips";
@@ -59,7 +59,7 @@ const Index = () => {
       />
       <FeaturesGrid />
       <HotelsSection />
-      <ItinerarySection itinerary={itinerary}/>
+      {/* {/* ItinerarySection removed - no longer available */}
       <RestaurantsSection />
       <ActivitiesSection />
       <BudgetSection />

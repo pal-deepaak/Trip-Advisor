@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { X, Send, Bot, User, Info, AlertCircle } from "lucide-react";
-import ItineraryViewer from "./ItineraryViewer";
-
 type Msg = { from: "bot" | "user"; text: string; type?: "text" | "recommend" | "itinerary" | "error" };
 
 const generateSessionId = () => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -14,7 +12,7 @@ const ChatBot = () => {
   const [input, setInput] = useState("");
   const [sessionId, setSessionId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  const [itineraryData, setItineraryData] = useState<any>(null);
+  // itineraryData removed - ItineraryViewer file deleted
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Initialize session on mount
@@ -86,8 +84,8 @@ const ChatBot = () => {
         if (data.data.error) {
           setMessages((m) => [...m, { from: "bot", text: data.data.error, type: "error" }]);
         } else {
-          setItineraryData(data.data);
-          setMessages((m) => [...m, { from: "bot", text: `🗺️ Your ${data.data.duration_days || "custom"}-day itinerary for ${data.data.city || "your destination"} is ready!`, type: "itinerary" }]);
+          // Itinerary data received but ItineraryViewer is deleted - show message only
+          setMessages((m) => [...m, { from: "bot", text: `🗺️ An itinerary was generated for ${data.data.city || "your destination"} but the detailed view is no longer available`, type: "text" }]);
         }
       }
 
@@ -243,14 +241,7 @@ const ChatBot = () => {
         </div>
       )}
 
-      {/* Itinerary modal */}
-      {itineraryData && (
-        <ItineraryViewer
-          data={itineraryData}
-          onClose={() => setItineraryData(null)}
-        />
-      )}
-    </>
+      </>
   );
 };
 
